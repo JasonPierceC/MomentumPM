@@ -1,0 +1,89 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Welcome back, {{ auth.currentUser()?.username }}!</h1>
+    <p>Here's an overview of your projects and tasks.</p>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-center">
+      <mat-spinner />
+    </div>
+  } @else if (dashboard(); as data) {
+    <div class="stats-grid">
+      <mat-card class="stat-card">
+        <mat-icon class="stat-icon projects">folder</mat-icon>
+        <div class="stat-info">
+          <span class="stat-value">{{ data.totalProjects }}</span>
+          <span class="stat-label">Projects</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-icon class="stat-icon tasks">task_alt</mat-icon>
+        <div class="stat-info">
+          <span class="stat-value">{{ data.totalTasks }}</span>
+          <span class="stat-label">Total Tasks</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-icon class="stat-icon done">check_circle</mat-icon>
+        <div class="stat-info">
+          <span class="stat-value">{{ data.tasksByStatus['Done'] || 0 }}</span>
+          <span class="stat-label">Completed</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card overdue">
+        <mat-icon class="stat-icon alert">schedule</mat-icon>
+        <div class="stat-info">
+          <span class="stat-value">{{ data.overdueTasks }}</span>
+          <span class="stat-label">Overdue</span>
+        </div>
+      </mat-card>
+    </div>
+
+    <div class="dashboard-row">
+      <mat-card class="status-card">
+        <mat-card-header>
+          <mat-card-title>Tasks by Status</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @for (entry of getStatusEntries(data.tasksByStatus); track entry[0]) {
+            <div class="status-row">
+              <span class="status-name">{{ entry[0] === 'InProgress' ? 'In Progress' : entry[0] === 'InReview' ? 'In Review' : entry[0] }}</span>
+              <div class="status-bar-wrap">
+                <div class="status-bar" [style.width.%]="data.totalTasks > 0 ? (entry[1] / data.totalTasks) * 100 : 0"></div>
+              </div>
+              <span class="status-count">{{ entry[1] }}</span>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="recent-card">
+        <mat-card-header>
+          <mat-card-title>Recent Tasks</mat-card-title>
+          <div class="card-header-action">
+            <a mat-button routerLink="/projects">View Projects</a>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+          @for (task of data.recentTasks; track task.id) {
+            <div class="recent-task">
+              <div class="task-dot" [style.background-color]="getPriorityColor(task.priority)"></div>
+              <div class="task-info">
+                <span class="task-title">{{ task.title }}</span>
+                <span class="task-project">{{ task.projectName }}</span>
+              </div>
+              <span class="task-status">{{ task.status === 'InProgress' ? 'In Progress' : task.status === 'InReview' ? 'In Review' : task.status }}</span>
+            </div>
+          }
+          @if (data.recentTasks.length === 0) {
+            <p class="empty-state">No tasks yet. <a routerLink="/projects">Create a project</a> to get started.</p>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+</div>

@@ -1,0 +1,39 @@
+<mat-card class="task-card">
+  <div class="priority-bar" [style.background-color]="priorityColor"></div>
+
+  <mat-card-content>
+    <p class="task-title">{{ task.title }}</p>
+
+    @if (task.description) {
+      <p class="task-desc">{{ task.description }}</p>
+    }
+
+    <div class="task-meta">
+      <span class="priority-chip" [style.color]="priorityColor" [style.border-color]="priorityColor">
+        {{ priorityLabel }}
+      </span>
+
+      @if (task.dueDate) {
+        <span class="due-date" [class.overdue]="isOverdue">
+          <mat-icon>schedule</mat-icon>
+          {{ task.dueDate | date:'MMM d' }}
+        </span>
+      }
+    </div>
+
+    <div class="task-footer">
+      @if (task.assigneeUsername) {
+        <div class="assignee">
+          <div class="avatar">{{ task.assigneeUsername.charAt(0).toUpperCase() }}</div>
+          <span>{{ task.assigneeUsername }}</span>
+        </div>
+      }
+      @if (task.commentCount > 0) {
+        <div class="comment-count">
+          <mat-icon>chat_bubble_outline</mat-icon>
+          {{ task.commentCount }}
+        </div>
+      }
+    </div>
+  </mat-card-content>
+</mat-card>

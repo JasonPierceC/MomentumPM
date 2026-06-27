@@ -1,0 +1,96 @@
+<div class="dialog-header">
+  <h2 mat-dialog-title>{{ isEdit ? 'Edit Task' : 'New Task' }}</h2>
+  @if (isEdit) {
+    <button mat-icon-button class="delete-btn" (click)="deleteTask()" matTooltip="Delete task">
+      <mat-icon>delete_outline</mat-icon>
+    </button>
+  }
+</div>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="task-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Title</mat-label>
+      <input matInput formControlName="title" placeholder="Task title">
+      @if (form.get('title')?.hasError('required')) {
+        <mat-error>Title is required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description" rows="3" placeholder="Optional details..."></textarea>
+    </mat-form-field>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Priority</mat-label>
+        <mat-select formControlName="priority">
+          @for (p of priorities; track p; let i = $index) {
+            <mat-option [value]="i">
+              <span class="priority-option" [style.color]="getPriorityColor(i)">● {{ p }}</span>
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          @for (s of statuses; track s; let i = $index) {
+            <mat-option [value]="i">{{ statusLabels[s] }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Due Date</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="dueDate">
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+    </div>
+  </form>
+
+  @if (isEdit) {
+    <mat-divider />
+    <div class="comments-section">
+      <h3>Comments</h3>
+      <div class="comments-list">
+        @for (comment of comments(); track comment.id) {
+          <div class="comment">
+            <div class="comment-avatar">{{ comment.authorUsername.charAt(0).toUpperCase() }}</div>
+            <div class="comment-body">
+              <div class="comment-header">
+                <strong>{{ comment.authorUsername }}</strong>
+                <span class="comment-date">{{ comment.createdAt | date:'short' }}</span>
+                @if (comment.authorId === auth.currentUser()?.userId) {
+                  <button mat-icon-button class="comment-delete" (click)="deleteComment(comment.id)">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                }
+              </div>
+              <p>{{ comment.content }}</p>
+            </div>
+          </div>
+        }
+        @if (comments().length === 0) {
+          <p class="no-comments">No comments yet.</p>
+        }
+      </div>
+      <div class="add-comment">
+        <input [(ngModel)]="newComment" placeholder="Write a comment..." class="comment-input" (keyup.enter)="addComment()">
+        <button mat-icon-button (click)="addComment()" [disabled]="!newComment.trim()">
+          <mat-icon>send</mat-icon>
+        </button>
+      </div>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-flat-button (click)="save()" [disabled]="form.invalid || loading">
+    {{ isEdit ? 'Save Changes' : 'Create Task' }}
+  </button>
+</mat-dialog-actions>

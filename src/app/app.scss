@@ -1,0 +1,87 @@
+.app-container {
+  height: 100vh;
+}
+
+.app-sidenav {
+  width: 240px;
+  background: #1e2a3a;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidenav-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+
+  .logo-icon {
+    color: #42a5f5;
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .logo-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+  }
+}
+
+mat-nav-list {
+  flex: 1;
+  padding-top: 8px;
+
+  a[mat-list-item] {
+    color: rgba(255,255,255,0.7);
+    border-radius: 8px;
+    margin: 2px 8px;
+
+    &.active-link,
+    &:hover {
+      background: rgba(66,165,245,0.2);
+      color: white;
+
+      mat-icon {
+        color: #42a5f5;
+      }
+    }
+
+    mat-icon {
+      color: rgba(255,255,255,0.5);
+    }
+  }
+}
+
+.sidenav-footer {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  button {
+    color: rgba(255,255,255,0.5);
+
+    &:hover {
+      color: white;
+    }
+  }
+}

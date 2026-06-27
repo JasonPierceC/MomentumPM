@@ -1,0 +1,62 @@
+<div class="board-page">
+  <div class="board-header">
+    <a mat-icon-button routerLink="/projects">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <div>
+      <h1>{{ project()?.name ?? 'Loading...' }}</h1>
+      @if (project()?.description) {
+        <p>{{ project()!.description }}</p>
+      }
+    </div>
+    <div class="spacer"></div>
+    <button mat-flat-button (click)="openCreateDialog('Todo')">
+      <mat-icon>add</mat-icon>
+      Add Task
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-center">
+      <mat-spinner />
+    </div>
+  } @else {
+    <div class="kanban-board">
+      @for (status of statuses; track status) {
+        <div class="kanban-column">
+          <div class="column-header">
+            <span class="column-title">{{ statusLabels[status] }}</span>
+            <span class="column-count">{{ getColumnTasks(status).length }}</span>
+            <button mat-icon-button class="add-btn" (click)="openCreateDialog(status)">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+
+          <div class="task-list"
+               cdkDropList
+               [id]="'list-' + status"
+               [cdkDropListData]="getColumnTasks(status)"
+               [cdkDropListConnectedTo]="connectedLists"
+               (cdkDropListDropped)="drop($event, status)">
+
+            @for (task of getColumnTasks(status); track task.id) {
+              <app-task-card
+                [task]="task"
+                (click)="openTaskDialog(task)"
+                cdkDrag
+                [cdkDragData]="task">
+                <div *cdkDragPlaceholder class="drag-placeholder"></div>
+              </app-task-card>
+            }
+
+            @if (getColumnTasks(status).length === 0) {
+              <div class="empty-column" cdkDrag cdkDragDisabled>
+                Drop tasks here
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
