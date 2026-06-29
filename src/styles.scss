@@ -9,6 +9,70 @@ html {
     typography: Roboto,
     density: 0,
   ));
+
+  // ── Custom design tokens ──────────────────────────────────────────────
+  --pm-bg-page:       #f5f5f5;
+  --pm-bg-card:       #ffffff;
+  --pm-bg-column:     #f0f2f5;
+  --pm-bg-sidenav:    #1e2a3a;
+
+  --pm-text-primary:  #1a1a1a;
+  --pm-text-secondary:#666666;
+  --pm-text-muted:    #888888;
+
+  --pm-border-subtle: #f0f0f0;
+  --pm-border-medium: #e8e8e8;
+  --pm-border-empty:  #dddddd;
+
+  --pm-status-bar:    #e8e8e8;
+  --pm-chip-bg:       #e3f2fd;
+  --pm-chip-color:    #1976d2;
+
+  --pm-empty-icon-bg:    #eef2ff;
+  --pm-empty-icon-color: #9ea8d0;
+  --pm-empty-heading:    #555555;
+
+  --pm-skeleton-from: #efefef;
+  --pm-skeleton-to:   #e2e2e2;
+
+  --pm-auth-title:    #1e2a3a;
+}
+
+html.dark {
+  @include mat.theme((
+    color: (
+      theme-type: dark,
+      primary: mat.$azure-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+
+  --pm-bg-page:       #0f111a;
+  --pm-bg-card:       #1a1d2e;
+  --pm-bg-column:     #22253a;
+  --pm-bg-sidenav:    #0d1018;
+
+  --pm-text-primary:  #d0d3e8;
+  --pm-text-secondary:#8890a8;
+  --pm-text-muted:    #666a84;
+
+  --pm-border-subtle: #2a2d45;
+  --pm-border-medium: #2a2d45;
+  --pm-border-empty:  #363966;
+
+  --pm-status-bar:    #2a2d45;
+  --pm-chip-bg:       #1c2d58;
+  --pm-chip-color:    #90caf9;
+
+  --pm-empty-icon-bg:    #1e2240;
+  --pm-empty-icon-color: #404878;
+  --pm-empty-heading:    #8890a8;
+
+  --pm-skeleton-from: #22253a;
+  --pm-skeleton-to:   #2c3050;
+
+  --pm-auth-title:    #d0d3e8;
 }
 
 *, *::before, *::after {
@@ -18,7 +82,7 @@ html {
 body {
   margin: 0;
   font-family: Roboto, 'Helvetica Neue', sans-serif;
-  background-color: #f5f5f5;
+  background-color: var(--pm-bg-page);
 }
 
 .page-container {

@@ -1,4 +1,4 @@
-<mat-card class="task-card">
+<mat-card class="task-card" [class.is-overdue]="isOverdue">
   <div class="priority-bar" [style.background-color]="priorityColor"></div>
 
   <mat-card-content>

@@ -1,4 +1,6 @@
 <div class="board-page">
+
+  <!-- ── Header ─────────────────────────────────────────────────────── -->
   <div class="board-header">
     <a mat-icon-button routerLink="/projects">
       <mat-icon>arrow_back</mat-icon>
@@ -16,47 +18,184 @@
     </button>
   </div>
 
+  <!-- ── Skeleton ───────────────────────────────────────────────────── -->
   @if (loading()) {
-    <div class="loading-center">
-      <mat-spinner />
-    </div>
-  } @else {
     <div class="kanban-board">
-      @for (status of statuses; track status) {
+      @for (i of [1,2,3,4]; track i) {
         <div class="kanban-column">
           <div class="column-header">
-            <span class="column-title">{{ statusLabels[status] }}</span>
-            <span class="column-count">{{ getColumnTasks(status).length }}</span>
-            <button mat-icon-button class="add-btn" (click)="openCreateDialog(status)">
-              <mat-icon>add</mat-icon>
-            </button>
+            <app-skeleton [height]="14" [radius]="4" [width]="'80px'" />
+            <app-skeleton [height]="20" [radius]="10" [width]="'28px'" />
           </div>
-
-          <div class="task-list"
-               cdkDropList
-               [id]="'list-' + status"
-               [cdkDropListData]="getColumnTasks(status)"
-               [cdkDropListConnectedTo]="connectedLists"
-               (cdkDropListDropped)="drop($event, status)">
-
-            @for (task of getColumnTasks(status); track task.id) {
-              <app-task-card
-                [task]="task"
-                (click)="openTaskDialog(task)"
-                cdkDrag
-                [cdkDragData]="task">
-                <div *cdkDragPlaceholder class="drag-placeholder"></div>
-              </app-task-card>
-            }
-
-            @if (getColumnTasks(status).length === 0) {
-              <div class="empty-column" cdkDrag cdkDragDisabled>
-                Drop tasks here
-              </div>
+          <div class="task-list">
+            @for (j of [1,2]; track j) {
+              <mat-card style="margin-bottom:8px;padding:12px;border-radius:8px">
+                <app-skeleton [height]="14" [radius]="4" />
+                <app-skeleton [height]="12" [radius]="4" [width]="'85%'" />
+                <app-skeleton [height]="20" [radius]="10" [width]="'64px'" />
+              </mat-card>
             }
           </div>
         </div>
       }
     </div>
+
+  } @else {
+
+    <!-- ── Toolbar ─────────────────────────────────────────────────── -->
+    <div class="board-toolbar">
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput placeholder="Search tasks…"
+               [value]="searchQuery()"
+               (input)="onSearchInput($event)">
+        @if (searchQuery()) {
+          <button matSuffix mat-icon-button (click)="searchQuery.set('')">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </mat-form-field>
+
+      <div class="priority-filters">
+        <button class="filter-pill" [class.active]="priorityFilter() === null"
+                (click)="priorityFilter.set(null)">All</button>
+        @for (p of priorities; track $index) {
+          <button class="filter-pill"
+                  [class.active]="priorityFilter() === $index"
+                  [style.--pill-color]="getPriorityColor($index)"
+                  (click)="togglePriorityFilter($index)">
+            <span class="pill-dot"></span>{{ p }}
+          </button>
+        }
+      </div>
+
+      <mat-button-toggle-group class="view-toggle"
+                               [value]="viewMode()"
+                               (change)="viewMode.set($event.value)">
+        <mat-button-toggle value="kanban" matTooltip="Kanban view">
+          <mat-icon>view_kanban</mat-icon>
+        </mat-button-toggle>
+        <mat-button-toggle value="list" matTooltip="List view">
+          <mat-icon>view_list</mat-icon>
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+
+    </div>
+
+    <!-- ── Kanban view ─────────────────────────────────────────────── -->
+    @if (viewMode() === 'kanban') {
+      <div class="kanban-board">
+        @for (status of statuses; track status) {
+          <div class="kanban-column">
+            <div class="column-header">
+              <span class="column-title">{{ statusLabels[status] }}</span>
+              <span class="column-count">{{ getColumnTasks(status).length }}</span>
+              <button mat-icon-button class="add-btn" (click)="openCreateDialog(status)">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+
+            <div class="task-list"
+                 cdkDropList
+                 [id]="'list-' + status"
+                 [cdkDropListData]="columns()[status]"
+                 [cdkDropListConnectedTo]="connectedLists"
+                 (cdkDropListDropped)="drop($event, status)">
+
+              @for (task of getColumnTasks(status); track task.id) {
+                <app-task-card
+                  [task]="task"
+                  (click)="openTaskDialog(task)"
+                  cdkDrag
+                  [cdkDragDisabled]="isFiltered()"
+                  [cdkDragData]="task">
+                  <div *cdkDragPlaceholder class="drag-placeholder"></div>
+                </app-task-card>
+              }
+
+              @if (getColumnTasks(status).length === 0) {
+                <div class="empty-column">
+                  <mat-icon>{{ isFiltered() ? 'search_off' : 'inbox' }}</mat-icon>
+                  <span>{{ isFiltered() ? 'No matches' : 'Drop tasks here' }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+    <!-- ── List view ───────────────────────────────────────────────── -->
+    } @else {
+      @if (filteredTasks().length === 0) {
+        <div class="no-results">
+          <mat-icon>{{ isFiltered() ? 'search_off' : 'inbox' }}</mat-icon>
+          <p>{{ isFiltered() ? 'No tasks match your filters' : 'No tasks yet' }}</p>
+          @if (isFiltered()) {
+            <button mat-button (click)="clearFilters()">Clear filters</button>
+          } @else {
+            <button mat-flat-button (click)="openCreateDialog('Todo')">
+              <mat-icon>add</mat-icon>Add Task
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="list-view">
+          <div class="list-header">
+            <span>Priority</span>
+            <span>Title</span>
+            <span>Status</span>
+            <span>Due Date</span>
+            <span></span>
+          </div>
+
+          @for (task of filteredTasks(); track task.id) {
+            <div class="list-row" (click)="openTaskDialog(task)"
+                 [class.is-overdue]="isOverdue(task)">
+
+              <div class="row-priority">
+                <span class="p-dot" [style.background]="getPriorityColor(task.priority)"></span>
+                <span [style.color]="getPriorityColor(task.priority)">{{ getPriorityLabel(task.priority) }}</span>
+              </div>
+
+              <div class="row-title-cell">
+                <span class="row-title">{{ task.title }}</span>
+                @if (task.description) {
+                  <span class="row-desc">{{ task.description }}</span>
+                }
+              </div>
+
+              <div class="row-status">
+                <span class="status-pill status-{{ numToStatus(task.status) }}">
+                  {{ statusLabels[numToStatus(task.status)] }}
+                </span>
+              </div>
+
+              <div class="row-due">
+                @if (task.dueDate) {
+                  <span class="due-label" [class.overdue-text]="isOverdue(task)">
+                    <mat-icon>schedule</mat-icon>
+                    {{ task.dueDate | date:'MMM d' }}
+                  </span>
+                } @else {
+                  <span class="no-date">—</span>
+                }
+              </div>
+
+              <div class="row-comments">
+                @if (task.commentCount > 0) {
+                  <span class="comment-count">
+                    <mat-icon>chat_bubble_outline</mat-icon>
+                    {{ task.commentCount }}
+                  </span>
+                }
+              </div>
+
+            </div>
+          }
+        </div>
+      }
+    }
+
   }
 </div>

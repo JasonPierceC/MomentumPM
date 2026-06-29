@@ -5,8 +5,30 @@
   </div>
 
   @if (loading()) {
-    <div class="loading-center">
-      <mat-spinner />
+    <div class="stats-grid">
+      @for (i of [1,2,3,4]; track i) {
+        <mat-card class="stat-card">
+          <app-skeleton [height]="36" [radius]="18" [width]="'40px'" />
+          <div class="stat-info" style="flex:1">
+            <app-skeleton [height]="30" [radius]="4" [width]="'60px'" />
+            <app-skeleton [height]="13" [radius]="4" [width]="'90px'" />
+          </div>
+        </mat-card>
+      }
+    </div>
+    <div class="dashboard-row">
+      <mat-card style="padding:20px;border-radius:12px">
+        <app-skeleton [height]="18" [radius]="4" [width]="'130px'" />
+        @for (i of [1,2,3,4]; track i) {
+          <app-skeleton [height]="10" [radius]="4" />
+        }
+      </mat-card>
+      <mat-card style="padding:20px;border-radius:12px">
+        <app-skeleton [height]="18" [radius]="4" [width]="'110px'" />
+        @for (i of [1,2,3,4,5]; track i) {
+          <app-skeleton [height]="14" [radius]="4" />
+        }
+      </mat-card>
     </div>
   } @else if (dashboard(); as data) {
     <div class="stats-grid">
@@ -80,7 +102,11 @@
             </div>
           }
           @if (data.recentTasks.length === 0) {
-            <p class="empty-state">No tasks yet. <a routerLink="/projects">Create a project</a> to get started.</p>
+            <div class="no-tasks-empty">
+              <mat-icon>task_alt</mat-icon>
+              <p>No tasks yet</p>
+              <a mat-button routerLink="/projects">Open a project →</a>
+            </div>
           }
         </mat-card-content>
       </mat-card>

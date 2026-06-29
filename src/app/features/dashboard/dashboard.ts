@@ -4,7 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SkeletonComponent } from '../../shared/skeleton/skeleton';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Dashboard } from '../../core/models/dashboard.model';
@@ -15,7 +15,7 @@ import { PRIORITY_COLORS } from '../../core/models/task.model';
   imports: [
     RouterLink,
     MatCardModule, MatButtonModule, MatIconModule,
-    MatChipsModule, MatProgressSpinnerModule
+    MatChipsModule, SkeletonComponent
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'

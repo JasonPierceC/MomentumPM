@@ -1,15 +1,20 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { DatePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { SkeletonComponent } from '../../../shared/skeleton/skeleton';
 import { MatDialog } from '@angular/material/dialog';
 import { TaskService } from '../../../core/services/task.service';
 import { ProjectService } from '../../../core/services/project.service';
-import { Task, TaskStatus, TASK_STATUSES, STATUS_LABELS } from '../../../core/models/task.model';
+import { Task, TaskStatus, TASK_STATUSES, STATUS_LABELS, PRIORITIES, PRIORITY_COLORS } from '../../../core/models/task.model';
 import { Project } from '../../../core/models/project.model';
 import { TaskDialogComponent } from '../task-dialog/task-dialog';
 import { TaskCardComponent } from '../task-card/task-card';
@@ -17,9 +22,10 @@ import { TaskCardComponent } from '../task-card/task-card';
 @Component({
   selector: 'app-kanban-board',
   imports: [
-    RouterLink, DragDropModule,
+    RouterLink, DragDropModule, DatePipe,
     MatCardModule, MatButtonModule, MatIconModule,
-    MatChipsModule, MatProgressSpinnerModule,
+    MatChipsModule, MatFormFieldModule, MatInputModule,
+    MatButtonToggleModule, MatTooltipModule, SkeletonComponent,
     TaskCardComponent
   ],
   templateUrl: './kanban-board.html',
@@ -33,9 +39,14 @@ export class KanbanBoardComponent implements OnInit {
 
   project = signal<Project | null>(null);
   loading = signal(true);
+  viewMode = signal<'kanban' | 'list'>('kanban');
+  searchQuery = signal('');
+  priorityFilter = signal<number | null>(null);
 
   readonly statuses = TASK_STATUSES;
   readonly statusLabels = STATUS_LABELS;
+  readonly priorities = PRIORITIES;
+  readonly priorityColors = PRIORITY_COLORS;
 
   columns = signal<Record<TaskStatus, Task[]>>({
     Todo: [], InProgress: [], InReview: [], Done: []
@@ -43,6 +54,30 @@ export class KanbanBoardComponent implements OnInit {
 
   readonly projectId = computed(() => +this.route.snapshot.paramMap.get('id')!);
   readonly connectedLists = TASK_STATUSES.map(s => `list-${s}`);
+
+  readonly isFiltered = computed(() =>
+    !!this.searchQuery().trim() || this.priorityFilter() !== null
+  );
+
+  private readonly filteredBase = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const p = this.priorityFilter();
+    const all = TASK_STATUSES.flatMap(s => this.columns()[s]);
+    return all.filter(t =>
+      (!q || t.title.toLowerCase().includes(q)) &&
+      (p === null || t.priority === p)
+    );
+  });
+
+  readonly filteredColumns = computed(() => {
+    const result: Record<TaskStatus, Task[]> = { Todo: [], InProgress: [], InReview: [], Done: [] };
+    for (const t of this.filteredBase()) result[this.numToStatus(t.status)].push(t);
+    return result;
+  });
+
+  readonly filteredTasks = computed(() =>
+    this.filteredBase().slice().sort((a, b) => a.status - b.status || a.order - b.order)
+  );
 
   ngOnInit() {
     const id = this.projectId();
@@ -55,10 +90,7 @@ export class KanbanBoardComponent implements OnInit {
     this.taskService.getByProject(this.projectId()).subscribe({
       next: (tasks) => {
         const cols: Record<TaskStatus, Task[]> = { Todo: [], InProgress: [], InReview: [], Done: [] };
-        for (const task of tasks) {
-          const status = this.numToStatus(task.status);
-          cols[status].push(task);
-        }
+        for (const task of tasks) cols[this.numToStatus(task.status)].push(task);
         this.columns.set(cols);
         this.loading.set(false);
       },
@@ -77,7 +109,6 @@ export class KanbanBoardComponent implements OnInit {
         event.currentIndex
       );
     }
-
     const task = event.container.data[event.currentIndex];
     this.taskService.updateStatus(task.id, {
       status: this.statusToNum(targetStatus),
@@ -90,9 +121,7 @@ export class KanbanBoardComponent implements OnInit {
       width: '560px',
       data: { projectId: this.projectId(), defaultStatus: this.statusToNum(status) }
     });
-    ref.afterClosed().subscribe(result => {
-      if (result) this.loadTasks();
-    });
+    ref.afterClosed().subscribe(result => { if (result) this.loadTasks(); });
   }
 
   openTaskDialog(task: Task) {
@@ -100,20 +129,38 @@ export class KanbanBoardComponent implements OnInit {
       width: '560px',
       data: { task, projectId: this.projectId() }
     });
-    ref.afterClosed().subscribe(result => {
-      if (result) this.loadTasks();
-    });
+    ref.afterClosed().subscribe(result => { if (result) this.loadTasks(); });
   }
 
   getColumnTasks(status: TaskStatus): Task[] {
-    return this.columns()[status];
+    return this.isFiltered() ? this.filteredColumns()[status] : this.columns()[status];
   }
 
-  numToStatus(n: number): TaskStatus {
-    return TASK_STATUSES[n] ?? 'Todo';
+  togglePriorityFilter(index: number) {
+    this.priorityFilter.set(this.priorityFilter() === index ? null : index);
   }
 
-  statusToNum(s: TaskStatus): number {
-    return TASK_STATUSES.indexOf(s);
+  clearFilters() {
+    this.searchQuery.set('');
+    this.priorityFilter.set(null);
   }
+
+  onSearchInput(event: Event) {
+    this.searchQuery.set((event.target as HTMLInputElement).value);
+  }
+
+  getPriorityColor(priority: number): string {
+    return this.priorityColors[this.priorities[priority] as keyof typeof this.priorityColors] ?? '#9e9e9e';
+  }
+
+  getPriorityLabel(priority: number): string {
+    return this.priorities[priority] ?? 'Medium';
+  }
+
+  isOverdue(task: Task): boolean {
+    return !!task.dueDate && new Date(task.dueDate) < new Date();
+  }
+
+  numToStatus(n: number): TaskStatus { return TASK_STATUSES[n] ?? 'Todo'; }
+  statusToNum(s: TaskStatus): number { return TASK_STATUSES.indexOf(s); }
 }

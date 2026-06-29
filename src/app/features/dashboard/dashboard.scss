@@ -5,18 +5,13 @@
     margin: 0 0 4px;
     font-size: 24px;
     font-weight: 600;
+    color: var(--pm-text-primary);
   }
 
   p {
     margin: 0;
-    color: #666;
+    color: var(--pm-text-secondary);
   }
-}
-
-.loading-center {
-  display: flex;
-  justify-content: center;
-  padding: 60px 0;
 }
 
 .stats-grid {
@@ -40,9 +35,9 @@
     height: 36px;
 
     &.projects { color: #1976d2; }
-    &.tasks { color: #7b1fa2; }
-    &.done { color: #388e3c; }
-    &.alert { color: #f57c00; }
+    &.tasks    { color: #7b1fa2; }
+    &.done     { color: #388e3c; }
+    &.alert    { color: #f57c00; }
   }
 
   .stat-info {
@@ -53,11 +48,12 @@
       font-size: 28px;
       font-weight: 700;
       line-height: 1;
+      color: var(--pm-text-primary);
     }
 
     .stat-label {
       font-size: 13px;
-      color: #666;
+      color: var(--pm-text-secondary);
       margin-top: 2px;
     }
   }
@@ -86,20 +82,20 @@
   align-items: center;
   gap: 12px;
   padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--pm-border-subtle);
 
   &:last-child { border-bottom: none; }
 
   .status-name {
     width: 90px;
     font-size: 13px;
-    color: #444;
+    color: var(--pm-text-secondary);
     flex-shrink: 0;
   }
 
   .status-bar-wrap {
     flex: 1;
-    background: #e8e8e8;
+    background: var(--pm-status-bar);
     border-radius: 4px;
     height: 8px;
     overflow: hidden;
@@ -117,7 +113,7 @@
     text-align: right;
     font-size: 13px;
     font-weight: 600;
-    color: #333;
+    color: var(--pm-text-primary);
   }
 }
 
@@ -130,7 +126,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--pm-border-subtle);
 
   &:last-child { border-bottom: none; }
 
@@ -149,11 +145,12 @@
     .task-title {
       font-size: 14px;
       font-weight: 500;
+      color: var(--pm-text-primary);
     }
 
     .task-project {
       font-size: 12px;
-      color: #888;
+      color: var(--pm-text-muted);
     }
   }
 
@@ -161,20 +158,29 @@
     font-size: 12px;
     padding: 2px 8px;
     border-radius: 12px;
-    background: #e3f2fd;
-    color: #1976d2;
+    background: var(--pm-chip-bg);
+    color: var(--pm-chip-color);
     white-space: nowrap;
   }
 }
 
-.empty-state {
-  color: #888;
-  font-size: 14px;
-  text-align: center;
-  padding: 16px 0;
+.no-tasks-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 32px 0;
+  color: var(--pm-text-muted);
 
-  a {
-    color: #1976d2;
-    text-decoration: none;
+  mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    opacity: 0.4;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
   }
 }

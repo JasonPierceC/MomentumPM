@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -40,6 +41,7 @@ export class TaskDialogComponent implements OnInit {
   private commentService = inject(CommentService);
   protected auth = inject(AuthService);
   private dialogRef = inject(MatDialogRef<TaskDialogComponent>);
+  private snackbar = inject(MatSnackBar);
   protected data: DialogData = inject(MAT_DIALOG_DATA);
 
   readonly priorities = PRIORITIES;
@@ -84,14 +86,20 @@ export class TaskDialogComponent implements OnInit {
       : this.taskService.create(dto);
 
     req.subscribe({
-      next: () => this.dialogRef.close(true),
+      next: () => {
+        this.snackbar.open(this.isEdit ? 'Task updated' : 'Task created', 'Dismiss', { duration: 3000, horizontalPosition: 'end' });
+        this.dialogRef.close(true);
+      },
       error: () => { this.loading = false; }
     });
   }
 
   deleteTask() {
     if (!confirm('Delete this task?')) return;
-    this.taskService.delete(this.data.task!.id).subscribe(() => this.dialogRef.close(true));
+    this.taskService.delete(this.data.task!.id).subscribe(() => {
+      this.snackbar.open('Task deleted', 'Dismiss', { duration: 3000, horizontalPosition: 'end' });
+      this.dialogRef.close(true);
+    });
   }
 
   addComment() {

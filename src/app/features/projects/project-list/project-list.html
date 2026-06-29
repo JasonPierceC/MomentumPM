@@ -11,17 +11,32 @@
   </div>
 
   @if (loading()) {
-    <div class="loading-center">
-      <mat-spinner />
+    <div class="projects-grid">
+      @for (i of [1,2,3]; track i) {
+        <mat-card class="project-card" style="padding:16px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+            <app-skeleton [height]="44" [radius]="10" [width]="'44px'" />
+            <div style="flex:1">
+              <app-skeleton [height]="18" [radius]="4" [width]="'70%'" />
+              <app-skeleton [height]="12" [radius]="4" [width]="'50%'" />
+            </div>
+          </div>
+          <app-skeleton [height]="14" [radius]="4" />
+          <app-skeleton [height]="14" [radius]="4" [width]="'80%'" />
+          <app-skeleton [height]="36" [radius]="6" [width]="'120px'" />
+        </mat-card>
+      }
     </div>
   } @else if (projects().length === 0) {
     <div class="empty-state">
-      <mat-icon>folder_open</mat-icon>
+      <div class="empty-icon-wrap">
+        <mat-icon>folder_open</mat-icon>
+      </div>
       <h2>No projects yet</h2>
-      <p>Create your first project to start managing tasks.</p>
+      <p>Create your first project and organise tasks on a Kanban board.</p>
       <button mat-flat-button (click)="openCreateDialog()">
         <mat-icon>add</mat-icon>
-        Create Project
+        New Project
       </button>
     </div>
   } @else {

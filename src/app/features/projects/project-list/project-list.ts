@@ -4,7 +4,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SkeletonComponent } from '../../../shared/skeleton/skeleton';
 import { MatMenuModule } from '@angular/material/menu';
 import { DatePipe } from '@angular/common';
 import { ProjectService } from '../../../core/services/project.service';
@@ -16,7 +17,7 @@ import { ProjectFormDialogComponent } from '../project-form-dialog/project-form-
   imports: [
     DatePipe,
     MatCardModule, MatButtonModule, MatIconModule,
-    MatProgressSpinnerModule, MatMenuModule
+    MatMenuModule, SkeletonComponent
   ],
   templateUrl: './project-list.html',
   styleUrl: './project-list.scss'
@@ -25,6 +26,7 @@ export class ProjectListComponent implements OnInit {
   private projectService = inject(ProjectService);
   private dialog = inject(MatDialog);
   private router = inject(Router);
+  private snackbar = inject(MatSnackBar);
 
   projects = signal<Project[]>([]);
   loading = signal(true);
@@ -47,7 +49,7 @@ export class ProjectListComponent implements OnInit {
   openCreateDialog() {
     const ref = this.dialog.open(ProjectFormDialogComponent, { width: '480px' });
     ref.afterClosed().subscribe(result => {
-      if (result) this.loadProjects();
+      if (result) { this.loadProjects(); this.toast('Project created'); }
     });
   }
 
@@ -57,7 +59,7 @@ export class ProjectListComponent implements OnInit {
       data: project
     });
     ref.afterClosed().subscribe(result => {
-      if (result) this.loadProjects();
+      if (result) { this.loadProjects(); this.toast('Project updated'); }
     });
   }
 
@@ -67,6 +69,17 @@ export class ProjectListComponent implements OnInit {
 
   deleteProject(project: Project) {
     if (!confirm(`Delete "${project.name}"? This will also delete all tasks.`)) return;
-    this.projectService.delete(project.id).subscribe(() => this.loadProjects());
+    this.projectService.delete(project.id).subscribe(() => {
+      this.loadProjects();
+      this.toast('Project deleted');
+    });
+  }
+
+  private toast(message: string) {
+    this.snackbar.open(message, 'Dismiss', {
+      duration: 3000,
+      horizontalPosition: 'end',
+      verticalPosition: 'bottom'
+    });
   }
 }
